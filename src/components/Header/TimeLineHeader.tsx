@@ -1,4 +1,4 @@
-import { useTimelineContext, TimelineType } from "@/contexts/timelineContent";
+import { useTimelineContext, TimelineType } from "@/contexts/TimelineContext";
 
 export default function TimeLineHeader() {
   const { tab, setTab, selectedYear, setSelectedYear, years } = useTimelineContext();

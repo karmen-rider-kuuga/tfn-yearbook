@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const httpClient = axios.create({
- baseURL: 'http://10.0.4.125:3000',
+ baseURL: 'http://165.22.110.44:5000',
  //  baseURL: 'https://5efc-49-48-130-127.ngrok-free.app',
  timeout: 30000,
  headers: {

@@ -1,5 +1,5 @@
 import { colors } from "@/configs/colors";
-import { useTimelineContext } from "@/contexts/timelineContent";
+import { useTimelineContext } from "@/contexts/TimelineContext";
 
 export default function Footer() {
   const { selectedYear, years, setSelectedYear } = useTimelineContext();

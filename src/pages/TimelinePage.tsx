@@ -3,8 +3,7 @@ import Footer from "@/components/Timeline/Footer";
 import Gallery from "@/components/Timeline/Gallery";
 import MemberList from "@/components/Timeline/Member";
 import { colors } from "@/configs/colors";
-import { TimelineProvider, useTimelineContext } from "@/contexts/timelineContent";
-
+import { TimelineProvider, useTimelineContext } from "@/contexts/TimelineContext";
 
 export default function TimelinePage() {
   return (

@@ -20,7 +20,6 @@ export interface GalleryResponse {
 
 // Props สำหรับ TimelineItem
 export interface TimelineItemProps {
- dateTitle: string
  dateSub: string
  title: string
  description: string

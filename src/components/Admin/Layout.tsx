@@ -1,10 +1,18 @@
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { Button } from "../ui/button";
 import { LogOut } from "lucide-react";
 import { colors } from "@/configs/colors";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const location = useLocation(); // ใช้ useLocation เพื่อดึง URL ปัจจุบัน
+  const location = useLocation();
+  const navigate = useNavigate()
+  const { logout } = useAuth();
+
+  const handleLogout = () => {
+    logout()
+    navigate("/")
+  }
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row font-Montserrat">
@@ -44,9 +52,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               alt="TrustFinance Logo"
               className="h-8 w-8"
             />
-            <h1 className="text-xl font-semibold">TrustFinance Yearbook Console</h1>
+            <h1 className="text-xl font-semibold">
+              TrustFinance Yearbook Console</h1>
           </div>
-          <Button variant="ghost" size="sm">
+          <Button
+            onClick={handleLogout}
+            variant="ghost" size="sm">
             <LogOut className="w-4 h-4 mr-2" />
             Log out
           </Button>
