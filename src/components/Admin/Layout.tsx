@@ -38,6 +38,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           >
             Squad
           </Link>
+
+          <Link
+            to="/team-management"
+            className={`block px-4 py-2 text-[#D9EAFD] rounded-lg ${location.pathname === "/team-management" ? "bg-[#355c9b] bg-opacity-30" : "hover:bg-gray-700"
+              }`}
+          >
+            Team
+          </Link>
         </nav>
       </aside>
 

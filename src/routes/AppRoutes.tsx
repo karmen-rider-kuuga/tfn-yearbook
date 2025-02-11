@@ -6,6 +6,7 @@ import AdminConsole from "@/pages/Admin/AdminConsole"
 import SquadManagement from "@/pages/Admin/SquadManagement"
 import GalleryManagement from "@/pages/Admin/GalleryManagement"
 import ProtectedRoute from "./ProtectedRoute"
+import TeamManagement from "@/pages/Admin/TeamPage"
 
 export default function AppRoutes() {
   return (
@@ -17,6 +18,7 @@ export default function AppRoutes() {
         <Route path="/admin" element={<AdminConsole />} />
         <Route path="/squad-management" element={<SquadManagement />} />
         <Route path="/gallery-management" element={<GalleryManagement />} />
+        <Route path="/team-management" element={<TeamManagement />} />
       </Route>
 
       {/* Unprotected Routes */}

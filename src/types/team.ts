@@ -5,26 +5,28 @@ export interface Member {
  roleDescription: string
  startDate: string
  imageUrl: string
- deletedAt?: string | null // อาจเป็น null
+ deletedAt?: string | null
  teamId: number
 }
 
-// Interface สำหรับ Team
 export interface Team {
  id: number
  name: string
  description: string
- members: Member[] // Array ของ Member
- deletedAt?: string | null // อาจเป็น null
+ members: Member[]
+ deletedAt?: string | null
 }
 
 export interface TeamResponse {
  data: {
-  data: Team[] // Array ของ Team อยู่ในฟิลด์ `data`
-  hasNextPage: boolean
-  limit: number
+  data: Team[]
   page: number
-  total: number
+  limit: number
+  search: {
+   name: string | null
+  }
+  hasNextPage: boolean
   totalPages: number
+  total: number
  }
 }

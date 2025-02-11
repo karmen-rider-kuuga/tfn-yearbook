@@ -8,7 +8,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation()
-  const adminPaths = ["/admin", "/dashboard", "/squad-management", "/gallery-management"]
+  const adminPaths = ["/admin", "/dashboard", "/squad-management", "/gallery-management", "/team-management"]
 
   const isAdminPath = adminPaths.some((path) => location.pathname.startsWith(path))
 
