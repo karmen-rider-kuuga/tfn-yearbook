@@ -18,7 +18,9 @@ export default function Home() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (password === "admin1234") {
+    const weakPasswords = ["admin", "opec", "est", "kong"];
+
+    if (weakPasswords.includes(password)) {
       login()
       navigate("/admin")
     } else {
