@@ -23,7 +23,6 @@ httpClient.interceptors.request.use(
  }
 )
 
-let isRefreshing = false
 let refreshSubscribers: any[] = []
 
 const addRefreshSubscriber = (callback: (accessToken: string) => void) => {
@@ -39,7 +38,7 @@ httpClient.interceptors.response.use(
   if (response && response.status === 401 && !config.url.includes('login')) {
    const originalRequest = config
 
-   return new Promise((resolve, reject) => {
+   return new Promise((resolve) => {
     addRefreshSubscriber((accessToken) => {
      originalRequest.headers.Authorization = `Bearer ${accessToken}`
      resolve(httpClient(originalRequest))

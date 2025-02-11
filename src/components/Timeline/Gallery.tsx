@@ -118,7 +118,7 @@ export default function Gallery() {
 
                 {/* แสดงรายการในเดือนนั้น */}
                 <div className="space-y-16">
-                  {items.map((item, index) => (
+                  {items.map((item) => (
                     <TimelineItem
                       key={item.id}
                       dateSub={new Date(item.eventDate).toDateString()}

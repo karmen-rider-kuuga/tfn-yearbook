@@ -102,9 +102,7 @@ function MemberCard({
   name,
   imageUrl,
   date,
-  isLast,
   index = 0,
-  number,
 }: MemberCardProps & { index: number; number: number }) {
   return (
     <motion.div

@@ -1,6 +1,4 @@
-import { TimelineItem } from '../types/Gallery_Timeline'
-
-export const timelineData: TimelineItem[] = [
+export const timelineData = [
  {
   dateTitle: 'January 2019',
   dateSub: 'January 1, 2019',
