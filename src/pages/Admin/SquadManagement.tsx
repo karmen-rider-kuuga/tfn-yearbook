@@ -7,29 +7,33 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
 } from "@/components/ui/select"
 
 import Layout from "@/components/Admin/Layout"
 import { MemberCard } from "@/components/Admin/MemberCard"
 import { UseAPI } from "@/apis/useAPI"
 import { API } from "@/apis/API"
-import { Member } from "@/types/team"
+import { Member, Team } from "@/types/team"
 import { MemberModal } from "@/components/Modal/member-modal"
 
-// ---- Import MemberModal ----
-
 export default function SquadManagement() {
-  const [department, setDepartment] = useState("all")
+  const [loading, setLoading] = useState(true)
+  const [members, setMembers] = useState<Member[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
+
+  // สร้าง State สำหรับเก็บค่าทีมที่ถูกเลือกใน Dropdown
+  // เริ่มต้น "all" = แสดงสมาชิกทั้งหมด
+  const [selectedTeamId, setSelectedTeamId] = useState("all")
+
+  // สำหรับการเปิด-ปิด Modal
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [members, setMembers] = useState<Member[]>([])
-  const [positions, setPositions] = useState<string[]>([])
 
   useEffect(() => {
     fetchMembers()
+    fetchTeams()
   }, [])
 
   // -- GET all members --
@@ -40,12 +44,8 @@ export default function SquadManagement() {
         url: API.squad,
         method: "GET",
       })
-      const data = res.data.data || []
+      const data: Member[] = res.data.data || []
       setMembers(data)
-
-      // Extract unique positions
-      const uniquePositions: any = Array.from(new Set(data.map((m: Member) => m.position)))
-      setPositions(uniquePositions)
     } catch (error) {
       console.error("Error fetching members:", error)
     } finally {
@@ -53,9 +53,22 @@ export default function SquadManagement() {
     }
   }
 
+  // -- GET teams --
+  async function fetchTeams() {
+    try {
+      const res = await UseAPI({
+        url: API.team,
+        method: "GET",
+      })
+      console.log("Teams:", res.data.data)
+      setTeams(res.data.data)
+    } catch (error) {
+      console.error("Error fetching teams:", error)
+    }
+  }
+
   // -- CREATE new member --
   async function handleAddMember(formData: FormData) {
-    formData.append("teamId", "1")
     try {
       setLoading(true)
       await UseAPI({
@@ -76,13 +89,11 @@ export default function SquadManagement() {
 
   // -- DELETE member by ID --
   async function deleteMemberById(id: number) {
-    const confirmDelete = confirm("Are you sure you want to delete this item?")
-    if (!confirmDelete) return
-
+    if (!confirm("Are you sure you want to delete this item?")) return
     try {
       setLoading(true)
       await UseAPI({
-        url: API.squad + `/${id}`,
+        url: `${API.squad}/${id}`,
         method: "DELETE",
       })
       await fetchMembers()
@@ -98,7 +109,7 @@ export default function SquadManagement() {
     try {
       setLoading(true)
       await UseAPI({
-        url: API.squad + `/${id}`,
+        url: `${API.squad}/${id}`,
         data: formData,
         method: "PUT",
         headers: {
@@ -113,32 +124,38 @@ export default function SquadManagement() {
     }
   }
 
-  // -- Open edit modal and set the current member to edit --
+  // เปิด Modal แก้ไขสมาชิก
   function openEditModal(member: Member) {
     setMemberToEdit(member)
     setIsEditModalOpen(true)
   }
 
-  // -- Filter members by department --
+  // -- Filter members by selectedTeamId --
   const filteredMembers =
-    department === "all"
+    selectedTeamId === "all"
       ? members
-      : members.filter((m) => m.position === department)
+      : members.filter((m) => String(m.teamId) === selectedTeamId)
 
   return (
     <Layout>
       <div className="p-6">
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-4">Squad Management</h2>
-          <Select value={department} onValueChange={setDepartment}>
+
+          {/* Dropdown สำหรับเลือกทีม */}
+          <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select department" />
+              <SelectValue placeholder="Select team" />
             </SelectTrigger>
             <SelectContent>
+              {/* ตัวเลือกสำหรับแสดงสมาชิก "ทุกทีม" */}
               <SelectItem value="all">All</SelectItem>
-              {positions.map((pos, idx) => (
-                <SelectItem key={idx} value={pos}>
-                  {pos}
+
+              {/* แสดงรายชื่อทีมจาก state teams */}
+              {teams.map((team) => (
+                // แปลง team.id เป็น string เพื่อให้ตรงกับ type ของ value
+                <SelectItem key={team.id} value={String(team.id)}>
+                  {team.name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -177,6 +194,7 @@ export default function SquadManagement() {
         <MemberModal
           mode="add"
           open={isAddModalOpen}
+          teams={teams} // ส่ง teams ลงไปให้ modal
           onOpenChange={(open) => setIsAddModalOpen(open)}
           onSubmit={async (formData) => {
             await handleAddMember(formData)
@@ -188,11 +206,11 @@ export default function SquadManagement() {
         <MemberModal
           mode="edit"
           open={isEditModalOpen}
-          memberData={memberToEdit} // ส่งข้อมูลสมาชิกที่ต้องการแก้ไข
+          teams={teams} // ส่ง teams ลงไปด้วยเช่นกัน
+          memberData={memberToEdit}
           onOpenChange={(open) => {
             setIsEditModalOpen(open)
             if (!open) {
-              // ถ้าปิด modal ให้เคลียร์ state
               setMemberToEdit(null)
             }
           }}

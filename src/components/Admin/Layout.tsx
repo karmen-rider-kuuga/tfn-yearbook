@@ -54,15 +54,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <header
           style={{ backgroundColor: colors.primary.background, color: colors.primary.textLight }}
           className="border-b p-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="flex items-center space-x-2">
             <img
               src="/logo.svg"
               alt="TrustFinance Logo"
               className="h-8 w-8"
             />
-            <h1 className="text-xl font-semibold">
+            <h1 className="text-xl">
               TrustFinance Yearbook Console</h1>
-          </div>
+          </Button>
           <Button
             onClick={handleLogout}
             variant="ghost" size="sm">

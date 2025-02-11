@@ -12,13 +12,22 @@ import { useAuth } from "@/contexts/AuthContext"
 export default function Home() {
   let navigate = useNavigate();
   const { toast } = useToast()
-  const { login } = useAuth()
+  const { isAuthenticated, login } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [password, setPassword] = useState("")
 
+  const onOpenConsole = () => {
+    if (isAuthenticated) {
+      navigate("/admin")
+    } else {
+      setIsOpen(true)
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const weakPasswords = ["admin", "opec", "est", "kong"];
+
+    const weakPasswords = ["admin1234", "opec", "est", "kong"];
 
     if (weakPasswords.includes(password)) {
       login()
@@ -50,7 +59,7 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg"
-              onClick={() => setIsOpen(true)}
+              onClick={onOpenConsole}
             >
               Go to Console
             </Button>

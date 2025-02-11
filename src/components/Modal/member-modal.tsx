@@ -7,7 +7,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Member } from "@/types/team"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+
+import { Member, Team } from "@/types/team"
 
 interface MemberModalProps {
   mode: "add" | "edit"
@@ -15,6 +23,7 @@ interface MemberModalProps {
   onOpenChange: (open: boolean) => void
   onSubmit: (data: FormData) => Promise<void>
   memberData?: Member | null // ข้อมูลเดิม ถ้าเป็นโหมด edit
+  teams: Team[] // รายชื่อทีมทั้งหมดที่ดึงมาได้
 }
 
 export function MemberModal({
@@ -23,35 +32,42 @@ export function MemberModal({
   onOpenChange,
   onSubmit,
   memberData,
+  teams,
 }: MemberModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
 
   // ฟิลด์ต่าง ๆ ที่ต้องการให้แก้ไข
-  // ในโหมด edit จะเติมค่าจาก memberData
   const [name, setName] = useState("")
   const [position, setPosition] = useState("")
   const [roleDescription, setRoleDescription] = useState("")
   const [startDate, setStartDate] = useState("")
 
-  // ถ้ามี memberData เปลี่ยนเมื่อไหร่ (หรือเปิด modal) ให้ set ค่าลงฟอร์ม
+  // เพิ่ม state สำหรับ teamId
+  const [teamId, setTeamId] = useState<string>("0")
+
+  // เมื่อ modal เปิด (หรือ memberData เปลี่ยน) ให้ set ค่าเริ่มต้น
   useEffect(() => {
     if (mode === "edit" && memberData) {
       setName(memberData.name || "")
       setPosition(memberData.position || "")
       setRoleDescription(memberData.roleDescription || "")
-      if (memberData.startDate) {
-        // ถ้า startDate เป็น 'YYYY-MM-DD' อยู่แล้วก็ set ได้ตรง ๆ
-        // หรือถ้าเป็นรูปแบบอื่นต้องแปลงเป็น YYYY-MM-DD ก่อน
-        setStartDate(memberData.startDate)
+      setStartDate(memberData.startDate || "")
+      // ถ้า edit แล้วมี teamId ให้เซ็ตค่าทีม
+      if (memberData.teamId) {
+        setTeamId(String(memberData.teamId))
+      } else {
+        setTeamId("0")
       }
+      setSelectedFile(null) // เคลียร์ไฟล์ทุกครั้ง เมื่อเปิดโมดอลแก้ไข
     } else {
-      // ถ้าเป็น add หรือ memberData เปลี่ยนเป็น null
+      // ถ้าเป็น add หรือเคลียร์ฟอร์ม
       setName("")
       setPosition("")
       setRoleDescription("")
       setStartDate("")
       setSelectedFile(null)
+      setTeamId("0")
     }
   }, [mode, memberData, open])
 
@@ -60,12 +76,10 @@ export function MemberModal({
     e.preventDefault()
     setIsDragging(true)
   }
-
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
   }
-
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
@@ -74,7 +88,6 @@ export function MemberModal({
       setSelectedFile(file)
     }
   }
-
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -82,26 +95,52 @@ export function MemberModal({
     }
   }
 
+  // ตรวจสอบว่าฟอร์มกรอกครบหรือไม่
+  // 1) name, position, roleDescription, startDate ต้องไม่ว่าง
+  // 2) รูปภาพ:
+  //    - ถ้า mode="add" => ต้องอัปโหลดไฟล์เสมอ
+  //    - ถ้า mode="edit" => ต้องมีรูปภาพเดิม (memberData?.imageUrl) หรือมีไฟล์ใหม่
+  const isFormValid = (() => {
+    if (!name.trim()) return false
+    if (!position.trim()) return false
+    if (!roleDescription.trim()) return false
+    if (!startDate.trim()) return false
+
+    // ตรวจรูป
+    if (mode === "add") {
+      // ต้องอัปโหลดไฟล์
+      if (!selectedFile) return false
+    } else {
+      // edit mode: ไม่มีไฟล์ใหม่ => ต้องมีรูปเดิม
+      const hasExistingImage = memberData?.imageUrl && memberData.imageUrl.trim() !== ""
+      if (!selectedFile && !hasExistingImage) {
+        return false
+      }
+    }
+
+    return true
+  })()
+
   // เมื่อกด Submit จะส่ง FormData กลับไปให้ Parent
-  // (แต่จะแยก logic กันว่าถ้าเป็น add จะเรียก POST, ถ้า edit จะเรียก PUT)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
     const formData = new FormData()
 
-    // ถ้ามีไฟล์ใหม่ที่เลือกไว้ (กรณี edit อาจจะไม่เปลี่ยนรูปก็ได้)
+    // Append รูป (ถ้ามีไฟล์ใหม่)
     if (selectedFile) {
       formData.append("image", selectedFile)
     }
-    // กรณี mode = edit แต่ไม่ได้เลือกไฟล์ใหม่ => ไม่ต้อง append image
-    // (API ฝั่ง server ต้องเขียนให้รองรับการไม่เปลี่ยนรูปด้วย)
 
     formData.append("name", name)
     formData.append("position", position)
     formData.append("roleDescription", roleDescription)
     formData.append("startDate", startDate)
 
-    // เรียก onSubmit แล้วปิด modal
+    // teamId ถ้าเป็น "0" อาจหมายถึง "No Team"
+    // สามารถปรับ logic เองได้ตามต้องการ
+    formData.append("teamId", teamId)
+
     await onSubmit(formData)
     onOpenChange(false)
   }
@@ -116,6 +155,27 @@ export function MemberModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Team Dropdown */}
+          <div className="space-y-2">
+            <Label htmlFor="team">Select Team</Label>
+            <Select
+              value={teamId}
+              onValueChange={setTeamId}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Choose Team" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">No Team</SelectItem>
+                {teams.map((team) => (
+                  <SelectItem key={team.id} value={String(team.id)}>
+                    {team.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Start Date */}
           <div className="space-y-2">
             <Label htmlFor="joinDate">Join Date</Label>
@@ -160,6 +220,7 @@ export function MemberModal({
                   </>
                 ) : (
                   <>
+                    {/* แสดงรูปเดิมกรณี edit mode มีรูปอยู่แล้ว */}
                     {mode === "edit" && memberData?.imageUrl && (
                       <img
                         src={memberData.imageUrl}
@@ -243,9 +304,19 @@ export function MemberModal({
             >
               Cancel
             </Button>
+            {/* 
+              ใช้ isFormValid เพื่อกำหนด disabled และกำหนด style 
+              - ถ้า valid: สีพื้นหลัง primary, กดได้
+              - ถ้าไม่ valid: ปิดการใช้งานปุ่ม
+            */}
             <Button
               type="submit"
-              className="bg-gray-200 text-gray-700 hover:bg-gray-300"
+              disabled={!isFormValid}
+              className={
+                isFormValid
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }
             >
               {mode === "edit" ? "Update" : "Save change"}
             </Button>
