@@ -63,8 +63,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
           >
-            Capture and preserve your memories in our digital yearbook platform. Create, manage, and share your school's
-            legacy.
+            Capture and connect your team's experiences in our digital yearbook platform. Collaborate, manage, and share your company's journey.
           </motion.p>
 
           <div className="pt-8">

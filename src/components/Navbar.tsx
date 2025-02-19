@@ -2,11 +2,18 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { colors } from "../configs/colors";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,7 +24,7 @@ export default function Navbar() {
   const { toast } = useToast();
   const { isAuthenticated, login } = useAuth();
 
-  const handleAdminClick = () => {
+  const handleConsoleClick = () => {
     if (isAuthenticated) {
       navigate("/admin");
     } else {
@@ -44,7 +51,10 @@ export default function Navbar() {
 
   return (
     <nav
-      style={{ backgroundColor: colors.navbar.background, color: colors.navbar.text }}
+      style={{
+        backgroundColor: colors.navbar.background,
+        color: colors.navbar.text,
+      }}
       className="p-4 shadow-lg font-Montserrat"
     >
       <div className="container mx-auto flex justify-between items-center">
@@ -58,14 +68,17 @@ export default function Navbar() {
 
         {/* เมนูปกติ (Desktop) */}
         <div className="hidden md:flex text-xl uppercase gap-16">
-
           <Link
             to="/timeline"
             style={{
               textDecorationColor:
-                location.pathname === "/timeline" ? colors.navbar.yellow : "transparent",
+                location.pathname === "/timeline"
+                  ? colors.navbar.yellow
+                  : "transparent",
             }}
-            className={`underline-offset-8 decoration-2 ${location.pathname === "/timeline" ? "underline" : "hover:underline"
+            className={`underline-offset-8 decoration-2 ${location.pathname === "/timeline"
+              ? "underline"
+              : "hover:underline"
               }`}
           >
             Timeline
@@ -75,67 +88,138 @@ export default function Navbar() {
             to="/squad"
             style={{
               textDecorationColor:
-                location.pathname === "/squad" ? colors.navbar.yellow : "transparent",
+                location.pathname === "/squad"
+                  ? colors.navbar.yellow
+                  : "transparent",
             }}
-            className={`underline-offset-8 decoration-2 ${location.pathname === "/squad" ? "underline" : "hover:underline"
+            className={`underline-offset-8 decoration-2 ${location.pathname === "/squad"
+              ? "underline"
+              : "hover:underline"
               }`}
           >
             Squad
           </Link>
 
           <div
-            onClick={handleAdminClick}
+            onClick={handleConsoleClick}
             style={{
               textDecorationColor:
-                location.pathname === "/admin" ? colors.navbar.yellow : "transparent",
+                location.pathname === "/admin"
+                  ? colors.navbar.yellow
+                  : "transparent",
               cursor: "pointer",
             }}
-            className={`underline-offset-8 decoration-2 ${location.pathname === "/admin" ? "underline" : "hover:underline"
+            className={`underline-offset-8 decoration-2 ${location.pathname === "/admin"
+              ? "underline"
+              : "hover:underline"
               }`}
           >
-            Admin
+            Console
           </div>
         </div>
 
         {/* Burger Menu (Mobile) */}
-        <button className="md:hidden focus:outline-none" onClick={() => setIsOpen(!isOpen)}>
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <button
+          className="md:hidden focus:outline-none"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <svg
+            className="w-6 h-6 text-white"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             {isOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16m-7 6h7"
+              />
             )}
           </svg>
         </button>
       </div>
 
-      {/* เมนู Mobile */}
-      {isOpen && (
-        <div className="md:hidden mt-2 bg-blue-800 p-4 rounded-lg">
-          <Link
-            to="/timeline"
-            className={`block p-2 rounded ${location.pathname === "/timeline" ? "bg-blue-700" : "hover:bg-blue-700"
-              }`}
+      {/* Overlay Menu สำหรับ Mobile */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-[rgba(27,47,79,0.98)] flex flex-col justify-center items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            Timeline
-          </Link>
-          <Link
-            to="/squad"
-            className={`block p-2 rounded ${location.pathname === "/squad" ? "bg-blue-700" : "hover:bg-blue-700"
-              }`}
-          >
-            Squad
-          </Link>
-        </div>
-      )}
+            <div className="text-white text-3xl space-y-8 uppercase text-center">
+              <Link
+                to="/timeline"
+                className={`block ${location.pathname === "/timeline" ? "font-bold" : ""
+                  }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Timeline
+              </Link>
+              <Link
+                to="/squad"
+                className={`block ${location.pathname === "/squad" ? "font-bold" : ""
+                  }`}
+                onClick={() => setIsOpen(false)}
+              >
+                Squad
+              </Link>
+              <div
+                className="block cursor-pointer"
+                onClick={() => {
+                  handleConsoleClick();
+                  setIsOpen(false);
+                }}
+              >
+                Console
+              </div>
+            </div>
 
-      {/* Modal สำหรับ Admin */}
+            {/* ปุ่ม Close */}
+            <button
+              className="text-white text-5xl absolute bottom-20 uppercase"
+              onClick={() => setIsOpen(false)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1"
+                stroke="currentColor"
+                className="w-12 h-12"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+              <span className="block text-sm">Close</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+      {/* Modal สำหรับ Console */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>ยืนยันตัวตน</DialogTitle>
             <DialogDescription>
-              กรุณาใส่รหัสผ่านเพื่อเข้าสู่ Admin Console
+              กรุณาใส่รหัสผ่านเพื่อเข้าสู่ Console
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -155,6 +239,7 @@ export default function Navbar() {
           </form>
         </DialogContent>
       </Dialog>
+
       <Toaster />
     </nav>
   );
