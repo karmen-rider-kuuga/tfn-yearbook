@@ -14,18 +14,17 @@ export function MemberCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, ease: "easeOut" }}
+      style={{ willChange: "transform", backfaceVisibility: "hidden" }}
     >
       <div className="aspect-[4/5] relative overflow-hidden">
         <motion.img
           src={image || "/placeholder.svg"}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 z-10"
+          style={{ willChange: "transform", backfaceVisibility: "hidden" }}
         />
         <motion.div
-          className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"
         />
       </div>
       <motion.div
