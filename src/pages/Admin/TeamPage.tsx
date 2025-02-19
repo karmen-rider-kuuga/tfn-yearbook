@@ -56,12 +56,11 @@ export default function TeamManagement() {
     }
   }
 
-  // ฟังก์ชันเปิดโมดอลสำหรับเพิ่มหรือแก้ไขทีม
   function openTeamModal(team?: Team) {
     if (team) {
-      setCurrentTeam(team)     // กำหนด Team ที่ต้องการแก้ไข
+      setCurrentTeam(team)
     } else {
-      setCurrentTeam(null)     // เป็น null เพื่อให้ modal รู้ว่าเป็นการ "เพิ่ม" ทีม
+      setCurrentTeam(null)
     }
     setTeamModalOpen(true)
   }
@@ -75,6 +74,7 @@ export default function TeamManagement() {
             onClick={() => openTeamModal()}
             variant="outline"
             className="flex gap-2"
+            size={teamModalOpen ? "sm" : "lg"}
           >
             <span>+</span> Add Team
           </Button>

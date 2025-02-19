@@ -20,7 +20,7 @@ export function MemberCard({
         <motion.img
           src={image || "/placeholder.svg"}
           alt={name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 z-10"
+          className="w-full h-full object-cover transition-transform duration-500 z-10"
           style={{ willChange: "transform", backfaceVisibility: "hidden" }}
         />
         <motion.div

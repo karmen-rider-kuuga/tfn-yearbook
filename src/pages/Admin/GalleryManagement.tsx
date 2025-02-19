@@ -8,8 +8,6 @@ import { GalleryCard } from "@/components/Admin/GalleryCard"
 import { UseAPI } from "@/apis/useAPI"
 import { GalleryItem } from "@/types/Gallery_Timeline"
 import { API } from "@/apis/API"
-
-// ---- Import Modal ใหม่ (GalleryModal) ----
 import { GalleryModal } from "@/components/Modal/gallery-modal"
 
 export default function GalleryManagement() {
@@ -146,6 +144,17 @@ export default function GalleryManagement() {
           </Select>
         </div>
 
+        <div className="mt-8 border-2 border-dashed border-gray-300 rounded-lg p-8 mb-8">
+          <Button
+            onClick={() => setIsAddPhotoOpen(true)}
+            variant="outline"
+            className="mx-auto flex gap-2"
+            size={isAddPhotoOpen ? "sm" : "lg"}
+          >
+            <span>+</span> Add Photo Gallery
+          </Button>
+        </div>
+
         <div className="space-y-4">
           {loading ? (
             <p>Loading...</p>
@@ -165,16 +174,6 @@ export default function GalleryManagement() {
               />
             ))
           )}
-        </div>
-
-        <div className="mt-8 border-2 border-dashed border-gray-300 rounded-lg p-8">
-          <Button
-            onClick={() => setIsAddPhotoOpen(true)}
-            variant="outline"
-            className="mx-auto flex gap-2"
-          >
-            <span>+</span> Add Photo
-          </Button>
         </div>
 
         {/* Modal สำหรับ Add Photo */}
@@ -205,6 +204,6 @@ export default function GalleryManagement() {
           }}
         />
       </div>
-    </Layout>
+    </Layout >
   )
 }

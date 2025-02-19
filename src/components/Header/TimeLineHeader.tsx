@@ -12,9 +12,10 @@ export default function TimeLineHeader(props: Props) {
   const { tab, setTab } = props;
 
   return (
-    <div className="max-w-7xl mx-auto font-Montserrat border-b border-gray-200">
-      <div className="container mx-auto px-4 py-2 flex justify-between items-center">
+    <div className="max-w-screen-2xl mx-auto font-Montserrat border-b border-gray-200">
+      <div className="w-full mx-auto px-12 py-4 flex justify-between items-center">
 
+        {/* 🔘 Tab Menu */}
         <div className="flex space-x-6">
           <button
             className={`font-semibold ${tab === TimelineType.GALLERY
@@ -36,9 +37,11 @@ export default function TimeLineHeader(props: Props) {
           </button>
         </div>
 
+        {/* 🔘 Empty Space for Flex */}
         <div className="flex-grow"></div>
 
       </div>
     </div>
   );
+
 }

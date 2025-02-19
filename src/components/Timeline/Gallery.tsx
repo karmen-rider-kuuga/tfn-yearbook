@@ -83,7 +83,7 @@ export default function Gallery() {
   }
 
   return (
-    <div className="relative w-full max-w-screen-xl mx-auto px-8 py-8 mt-10 font-Montserrat">
+    <div className="relative w-full max-w-screen-2xl mx-auto px-12 py-8 mt-10 font-Montserrat">
       {monthAndYearEntries.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}

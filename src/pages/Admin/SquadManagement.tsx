@@ -162,6 +162,17 @@ export default function SquadManagement() {
           </Select>
         </div>
 
+        <div className="mt-8 border-2 border-dashed border-gray-300 rounded-lg p-8 mb-8">
+          <Button
+            variant="outline"
+            className="mx-auto flex gap-2"
+            onClick={() => setIsAddModalOpen(true)}
+            size={isAddModalOpen ? "sm" : "lg"}
+          >
+            <span>+</span> Add Squad Member
+          </Button>
+        </div>
+
         <div className="space-y-4">
           {loading ? (
             <p>Loading...</p>
@@ -178,16 +189,6 @@ export default function SquadManagement() {
               />
             ))
           )}
-        </div>
-
-        <div className="mt-8 border-2 border-dashed border-gray-300 rounded-lg p-8">
-          <Button
-            variant="outline"
-            className="mx-auto flex gap-2"
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <span>+</span> Add Photo
-          </Button>
         </div>
 
         {/* Modal สำหรับ Add Member */}

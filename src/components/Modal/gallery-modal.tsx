@@ -100,7 +100,7 @@ export function GalleryModal({
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>
-            {mode === "edit" ? "Edit Photo" : "Add Photo"}
+            {mode === "edit" ? "Edit Photo" : "Add Photo Gallery"}
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
