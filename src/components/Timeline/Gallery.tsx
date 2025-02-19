@@ -2,7 +2,6 @@ import { GalleryItem } from "../../types/Gallery_Timeline"
 import { useEffect, useMemo, useState } from "react"
 import { UseAPI } from "@/apis/useAPI"
 import TimelineItem from "./TimelineItem"
-import { useTimelineContext } from "@/contexts/TimelineContext"
 import { motion } from "framer-motion"
 
 const monthNames = [
@@ -13,7 +12,6 @@ const monthNames = [
 export default function Gallery() {
   const [galleryData, setGalleryData] = useState<GalleryItem[]>([])
   const [loading, setLoading] = useState(true)
-  const { setYears, selectedYear, setSelectedYear } = useTimelineContext()
 
   useEffect(() => {
     fetchGallery()
@@ -32,21 +30,11 @@ export default function Gallery() {
       })
 
       const data = res.data.data || []
-      setGalleryData(data)
-
-      // หา unique year
-      const uniqueYears: string[] = Array.from(
-        new Set(
-          data.map((item: GalleryItem) =>
-            new Date(item.eventDate).getFullYear().toString()
-          )
-        )
+      // เรียงลำดับข้อมูลจากวันที่ล่าสุดลงมา
+      const sortedData = data.sort((a: GalleryItem, b: GalleryItem) =>
+        new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
       )
-      setYears(uniqueYears)
-      // หากยังไม่มี selectedYear ให้ set เป็นปีแรก
-      if (uniqueYears.length > 0 && !selectedYear) {
-        setSelectedYear(uniqueYears[0])
-      }
+      setGalleryData(sortedData)
     } catch (error) {
       console.error("Error fetching gallery:", error)
     } finally {
@@ -54,40 +42,37 @@ export default function Gallery() {
     }
   }
 
-  // แยกกลุ่มตามเดือน
-  const groupedByMonth = useMemo(() => {
-    return galleryData
-      .filter(item => new Date(item.eventDate).getFullYear().toString() === selectedYear)
-      .reduce((acc, item) => {
-        const monthIndex = new Date(item.eventDate).getMonth()
-        if (!acc[monthIndex]) {
-          acc[monthIndex] = []
-        }
-        acc[monthIndex].push(item)
-        return acc
-      }, {} as Record<number, GalleryItem[]>)
-  }, [galleryData, selectedYear])
+  // แยกกลุ่มตามเดือนและปี
+  const groupedByMonthAndYear = useMemo(() => {
+    return galleryData.reduce((acc, item) => {
+      const date = new Date(item.eventDate)
+      const year = date.getFullYear()
+      const monthIndex = date.getMonth()
+      const key = `${year}-${monthIndex}`
 
-  // สร้าง array ที่เรียงตามเดือน 0–11
-  const monthEntries = useMemo(() => {
-    return Object.entries(groupedByMonth).sort((a, b) => Number(a[0]) - Number(b[0]))
-  }, [groupedByMonth])
+      if (!acc[key]) {
+        acc[key] = []
+      }
+      acc[key].push(item)
+      return acc
+    }, {} as Record<string, GalleryItem[]>)
+  }, [galleryData])
+
+  const monthAndYearEntries = useMemo(() => {
+    return Object.entries(groupedByMonthAndYear).sort((a, b) => {
+      const [yearA, monthA] = a[0].split('-')
+      const [yearB, monthB] = b[0].split('-')
+      return new Date(`${yearB}-${monthB}-01`).getTime() - new Date(`${yearA}-${monthA}-01`).getTime()
+    })
+  }, [groupedByMonthAndYear])
 
   if (loading) {
     return <div>Loading...</div>
   }
 
   return (
-    <div className="relative container mx-auto px-4 py-8 mt-10 font-Montserrat">
-
-      <motion.div
-        initial={{ height: 0 }}
-        animate={{ height: "100%" }}
-        transition={{ duration: 0.8, ease: "easeInOut" }}
-        className="absolute left-8 top-0 bottom-0 w-px bg-gray-200"
-      />
-
-      {monthEntries.length === 0 ? (
+    <div className="relative w-full max-w-screen-xl mx-auto px-8 py-8 mt-10 font-Montserrat">
+      {monthAndYearEntries.length === 0 ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -96,43 +81,52 @@ export default function Gallery() {
           No data available
         </motion.div>
       ) : (
-        <div>
-          {monthEntries.map(([monthIndex, items], monthIdx) => {
-            const monthNumber = Number(monthIndex)
-            const monthLabel = `${monthNames[monthNumber]} ${selectedYear}`
+        <div className="space-y-32">
+          {monthAndYearEntries.map(([key, items], monthIdx) => {
+            const [year, monthIndex] = key.split('-');
+            const monthNumber = Number(monthIndex);
+            const monthLabel = `${monthNames[monthNumber]} ${year}`;
 
             return (
               <motion.div
-                key={monthIndex}
-                className="relative mb-16 pl-12" // เว้นซ้าย 12px จากเส้น timeline
+                key={key}
+                className="relative flex flex-col lg:flex-row lg:items-start lg:space-x-8 mb-16"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: monthIdx * 0.2 }}
               >
-                {/* ชื่อเดือน */}
-                <div className="mb-6">
-                  <span className="text-sm font-semibold text-[#F86F03]">
+                {/* 🔶 เส้น Timeline สำหรับจอใหญ่ */}
+                <div className="absolute left-8 top-[2rem] bottom-0 w-[1px] bg-[#CCCFE5] z-0 hidden lg:block"></div>
+
+                {/* 🔶 ชื่อเดือนวางตรงกลางและปรับให้ใหญ่ขึ้น */}
+                <div className="text-center mx-auto mb-4 lg:absolute lg:left-[0.5rem] lg:transform lg:-translate-x-[50%] lg:-translate-y-1/2 lg:top-0 lg:text-left z-10">
+                  <span className="text-xl lg:text-sm font-semibold text-[#F86F03] block">
                     {monthLabel}
                   </span>
                 </div>
 
-                {/* แสดงรายการในเดือนนั้น */}
-                <div className="space-y-16">
-                  {items.map((item) => (
+                {/* 🔄 แสดงรายการในเดือนนั้น */}
+                <div className="flex-1 space-y-12 pt-8 pl-2 lg:pl-20">
+                  {items.map((item, index) => (
                     <TimelineItem
                       key={item.id}
                       dateSub={new Date(item.eventDate).toDateString()}
                       title={item.caption}
                       description={item.description}
                       imageUrl={item.imageUrl}
+                      imagePosition={index % 2 === 1 ? "right" : "left"}
+                      animationDelay={index * 0.1}
+                      index={index}
                     />
                   ))}
                 </div>
               </motion.div>
-            )
+            );
           })}
         </div>
       )}
     </div>
+
+
   )
 }
