@@ -135,21 +135,14 @@ function MemberCard({
         transition: { duration: 0.3, ease: "easeOut" }
       }}
     >
+      {/* ✅ Design สำหรับจอใหญ่และจอกลาง */}
       <motion.div
-        className="bg-white rounded-xl w-full shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden transform-gpu relative"
+        className="hidden md:block bg-white rounded-xl w-full shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden transform-gpu relative"
         whileHover={{
           y: -5,
           transition: { duration: 0.3, ease: "easeOut" },
         }}
       >
-        {/* 🔥 ปรับวันที่เป็น fixed */}
-        {/* <span className="fixed top-2 right-2 text-xs text-gray-500 bg-white px-2 py-1 rounded-md shadow-sm block sm:hidden z-10 opacity-50">
-          {new Date(date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-          })}
-        </span> */}
-
         <div className="relative overflow-hidden" style={{ height: "400px" }}>
           <motion.img
             src={imageUrl || "https://via.placeholder.com/300x400?text=No+Image"}
@@ -160,8 +153,6 @@ function MemberCard({
             whileHover={{ scale: 1.03 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           />
-
-          {/* 🔥 Overlay Gradient Effect */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
 
@@ -177,9 +168,44 @@ function MemberCard({
           </p>
         </motion.div>
       </motion.div>
+
+      {/* ✅ Design สำหรับจอเล็ก */}
+      <motion.div
+        className="md:hidden bg-white rounded-xl w-full max-w-[92%] shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden transform-gpu relative flex mx-auto h-[140px]"
+        whileHover={{
+          y: -5,
+          transition: { duration: 0.3, ease: "easeOut" },
+        }}
+      >
+        <div className="w-[35%] h-full rounded-l-xl overflow-hidden flex-shrink-0">
+          <motion.img
+            src={imageUrl || "https://via.placeholder.com/300x400?text=No+Image"}
+            alt={name}
+            className="object-cover w-full h-full transition-transform duration-300 transform-gpu"
+            initial={{ scale: 1.1 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.03 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          />
+        </div>
+
+        <motion.div
+          className="flex-1 bg-[#F5F5F8] p-4 flex flex-col justify-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: index * 0.1 + 0.4 }}
+        >
+          <p className="font-semibold text-gray-800 text-lg">{name}</p>
+          <p className="text-gray-600 text-sm">{position}</p>
+        </motion.div>
+      </motion.div>
+
+
+
     </motion.div>
   )
 }
+
 
 
 
