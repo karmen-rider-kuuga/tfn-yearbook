@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react"
 import { UseAPI } from "@/apis/useAPI"
 import TimelineItem from "./TimelineItem"
 import { motion } from "framer-motion"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const monthNames = [
   "January", "February", "March", "April", "May", "June",
@@ -67,7 +68,18 @@ export default function Gallery() {
   }, [groupedByMonthAndYear])
 
   if (loading) {
-    return <div>Loading...</div>
+    return (
+      <div className="container mx-auto px-4 py-8 font-Montserrat">
+        <div className="relative space-y-12">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="relative">
+              <Skeleton className="h-4 w-24 mb-4" />
+              <Skeleton className="h-[400px] w-[300px] rounded-lg" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -126,7 +138,5 @@ export default function Gallery() {
         </div>
       )}
     </div>
-
-
   )
 }

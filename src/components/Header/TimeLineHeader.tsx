@@ -15,8 +15,6 @@ export default function TimeLineHeader(props: Props) {
     <div className="max-w-7xl mx-auto font-Montserrat border-b border-gray-200">
       <div className="container mx-auto px-4 py-2 flex justify-between items-center">
 
-        <div className="flex-grow"></div>
-
         <div className="flex space-x-6">
           <button
             className={`font-semibold ${tab === TimelineType.GALLERY
@@ -37,6 +35,8 @@ export default function TimeLineHeader(props: Props) {
             Member
           </button>
         </div>
+
+        <div className="flex-grow"></div>
 
       </div>
     </div>

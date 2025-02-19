@@ -3,7 +3,7 @@ import { TimelineItemProps } from "../../types/Gallery_Timeline"
 
 interface ExtendedTimelineItemProps extends TimelineItemProps {
   animationDelay?: number
-  index: number // ✅ เพิ่ม index สำหรับการสลับตำแหน่ง
+  index: number
 }
 
 export default function TimelineItem({
@@ -11,7 +11,6 @@ export default function TimelineItem({
   title,
   description,
   imageUrl,
-  imagePosition = "left",
   animationDelay = 0,
   index, // ✅ ใช้ index เพื่อสลับตำแหน่ง
 }: ExtendedTimelineItemProps) {

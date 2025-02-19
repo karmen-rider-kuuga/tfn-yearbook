@@ -1,21 +1,15 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import type { Member, MemberCardProps } from "../../types/Member_Timeline"
 import { UseAPI } from "@/apis/useAPI"
 import { API } from "@/apis/API"
-import { useTimelineContext } from "@/contexts/TimelineContext"
 import { motion } from "framer-motion"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function MemberList() {
   const [loading, setLoading] = useState(true)
-  const [members, setMembers] = useState<Member[]>([])
-  const { setYears, selectedYear, setSelectedYear } = useTimelineContext()
+  const [groupedMembers, setGroupedMembers] = useState<Record<string, Member[]>>({})
 
-  useEffect(() => {
-    fetchMembers()
-  }, [])
-
-  async function fetchMembers() {
+  const fetchMembers = useCallback(async () => {
     try {
       setLoading(true)
       const res = await UseAPI({
@@ -30,32 +24,36 @@ export default function MemberList() {
         date: item.startDate,
       }))
 
-      setMembers(members)
+      // 🔥 จัดกลุ่มตามวันที่
+      const grouped = members.reduce((acc: Record<string, Member[]>, member) => {
+        const dateLabel = new Date(member.date).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+        if (!acc[dateLabel]) acc[dateLabel] = []
+        acc[dateLabel].push(member)
+        return acc
+      }, {})
 
-      const uniqueYears = Array.from(new Set(members.map((item) => new Date(item.date).getFullYear().toString())))
-
-      setYears(uniqueYears)
-
-      if (uniqueYears.length > 0 && !selectedYear) {
-        setSelectedYear(uniqueYears[0])
-      }
+      setGroupedMembers(grouped)
     } catch (error) {
       console.error("Error fetching teams:", error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchMembers()
+  }, [fetchMembers])
 
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8 font-Montserrat">
-        <div className="relative md:pl-48 space-y-12">
-          {" "}
-          {/* Increased left padding significantly */}
+        <div className="relative space-y-12">
           {[1, 2, 3].map((i) => (
             <div key={i} className="relative">
-              <Skeleton className="h-2 w-2 rounded-full absolute -left-40 top-2 hidden md:block" />{" "}
-              {/* Adjusted position */}
               <Skeleton className="h-4 w-24 mb-4" />
               <Skeleton className="h-[400px] w-[300px] rounded-lg" />
             </div>
@@ -66,32 +64,47 @@ export default function MemberList() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 font-Montserrat">
+    <div className="relative w-full max-w-screen-xl mx-auto px-8 py-8 mt-10 font-Montserrat">
       <motion.div
-        className="relative md:pl-48" // Increased left padding significantly
+        className="relative"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.6 }}
       >
-        {/* Timeline vertical line */}
-        <div className="absolute left-8 top-0 bottom-0 w-px bg-gray-200 hidden md:block" />
+        <div className="space-y-32">
+          {Object.entries(groupedMembers).map(([dateLabel, members], index) => (
+            <motion.div
+              key={dateLabel}
+              className="relative flex flex-col lg:flex-row lg:items-start lg:space-x-8 mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.2, ease: "easeOut" }}
+            >
+              {/* 🔶 เส้น Timeline สำหรับจอใหญ่ */}
+              <div className="absolute left-8 top-[2rem] bottom-0 w-[1px] bg-[#CCCFE5] z-0 hidden lg:block"></div>
 
-        {/* Member cards grid */}
-        <div className="grid md:grid-cols-2 gap-8">
-          {members
-            .filter((member) => new Date(member.date).getFullYear().toString() === selectedYear)
-            .map((member, index, array) => (
-              <MemberCard
-                key={member.id}
-                name={member.name}
-                imageUrl={member.imageUrl || ""}
-                date={member.date}
-                isLast={index === array.length - 1}
-                id={member.id}
-                index={index}
-                number={index + 10} // Example number for timeline
-              />
-            ))}
+              {/* 🔶 ชื่อวันที่วางตรงกลางและปรับให้ใหญ่ขึ้น */}
+              <div className="text-center mx-auto mb-4 lg:absolute lg:left-[0.5rem] lg:transform lg:-translate-x-[50%] lg:-translate-y-1/2 lg:top-0 lg:text-left z-10">
+                <span className="text-xl lg:text-sm font-semibold text-[#F86F03] block">
+                  {dateLabel}
+                </span>
+              </div>
+
+              {/* 🔄 แสดง Card ของ Member */}
+              <div className="flex-1 space-y-4 pt-8 pl-10 lg:pl-16">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {members.map((member, idx) => (
+                    <MemberCard
+                      key={member.id}
+                      name={member.name}
+                      imageUrl={member.imageUrl || ""}
+                      date={member.date}
+                      index={idx} id={""} />
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </motion.div>
     </div>
@@ -101,69 +114,53 @@ export default function MemberList() {
 function MemberCard({
   name,
   imageUrl,
-  date,
-  index = 0,
-}: MemberCardProps & { index: number; number: number }) {
+  index,
+}: MemberCardProps & { index: number }) {
   return (
     <motion.div
-      className="relative pb-16" // Removed default left padding
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className="relative w-[280px] md:w-[300px] pb-8 lg:pb-16"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
+      whileHover={{
+        scale: 1.05,
+        transition: { duration: 0.3, ease: "easeOut" }
+      }}
     >
-      {/* Timeline number and connector - only visible on md and up */}
-      {/* <div className="absolute left-[-88px] top-2 hidden md:flex items-center">
-        <div className="bg-red-500 text-white text-sm font-semibold px-2 py-1 rounded">{number}</div>
-        <div className="h-px w-6 border-t-2 border-dashed border-gray-300" />
-      </div> */}
-
-      {/* Date */}
-      <motion.span
-        className="font-semibold text-sm text-[#D87D2B] mb-6 block"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
-      >
-        {new Date(date).toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        })}
-      </motion.span>
-
-      {/* Card */}
       <motion.div
-        className="bg-white rounded-xl w-[300px] shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+        className="bg-white rounded-xl w-full shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden transform-gpu"
         whileHover={{
           y: -5,
-          transition: { duration: 0.2 },
+          transition: { duration: 0.3, ease: "easeOut" },
         }}
       >
         <div className="relative overflow-hidden" style={{ height: "400px" }}>
           <motion.img
-            src={
-              imageUrl ||
-              "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202568-02-05%20at%2012.20.11-qhrlHjjgMwkYdTneMb9onfwFozd8WR.png"
-            }
+            src={imageUrl || "https://via.placeholder.com/300x400?text=No+Image"}
             alt={name}
-            className="object-cover w-full h-full"
-            initial={{ scale: 1.2 }}
+            className="object-cover w-full h-full transition-transform duration-300 transform-gpu"
+            initial={{ scale: 1.1 }}
             animate={{ scale: 1 }}
-            transition={{ duration: 0.5, delay: index * 0.1 + 0.3 }}
+            whileHover={{ scale: 1.03 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+          {/* 🔥 Overlay Gradient Effect */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
         </div>
+
         <motion.div
           className="bg-[#F5F5F8] p-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 + 0.4 }}
+          transition={{ duration: 0.6, delay: index * 0.1 + 0.4 }}
         >
           <p className="font-semibold text-center text-gray-700 text-lg mb-1">{name}</p>
           <p className="text-center text-[#D0D0D0] text-base">Role</p>
         </motion.div>
       </motion.div>
     </motion.div>
+
   )
 }
-
